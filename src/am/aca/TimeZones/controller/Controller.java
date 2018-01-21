@@ -1,60 +1,69 @@
 package am.aca.TimeZones.controller;
 
-import am.aca.TimeZones.comman.model.CompareByConutryCode;
-import am.aca.TimeZones.comman.model.CompareByTimeZone;
+import am.aca.TimeZones.comman.model.CustomComparator;
 import am.aca.TimeZones.comman.model.Zone;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
+
+import static am.aca.TimeZones.util.Constants.PATH;
+import static am.aca.TimeZones.util.Constants.ZONE;
 
 /**
  * Created by Armen on 4/12/2017.
  */
-public class Controller {
-    public void execute() throws IOException {
 
-        FileReader timeZonesFromFile = new FileReader("C:\\Users\\Armen\\IdeaProjects\\TimeZone\\src\\am\\aca\\TimeZones\\resource\\zone.csv");
-        BufferedReader fileReader = new BufferedReader(timeZonesFromFile);
-        String tempString;
-        Zone[] zones = new Zone[424];
-        int i = 0;
-        while((tempString = fileReader.readLine()) != null){
-            tempString = tempString.replace('"', ' ');
+class Controller {
+    void execute() throws IOException {
+        List<Zone> data = fileRead();
 
-            String [] getLineFromFile = tempString.split(",");
-            zones[i] = new Zone();
-
-            zones[i].setID(getLineFromFile[0]);
-            zones[i].setCountryCode(getLineFromFile[1]);
-            zones[i].setTimeZone(getLineFromFile[2]);
-
-            i += 1;
-        }
-        timeZonesFromFile.close();
         System.out.println("@st inchi sortavrel " +
                 "\n 1: By Country code " +
-                "\n 2: By Time Zone" );
+                "\n 2: By Time Zone");
         Scanner input = new Scanner(System.in);
-        int inputByUser = input.nextInt();
 
+        int inputByUser = input.nextInt();
         switch (inputByUser) {
             case 1:
-                Arrays.sort(zones, new CompareByConutryCode());
-                printSortedCountries(zones);
+                data.sort(new CustomComparator.CompareByCountryCode());
+                printSortedZones(data);
                 break;
             case 2:
-                Arrays.sort(zones, new CompareByTimeZone());
-                printSortedCountries(zones);
+                data.sort(new CustomComparator.CompareByTimeZone());
+                printSortedZones(data);
                 break;
-
         }
     }
-    public void printSortedCountries(Zone[] zones){
+
+    private List<Zone> fileRead() throws IOException {
+        FileReader timeZonesFromFile = new FileReader(PATH + ZONE);
+        BufferedReader fileReader = new BufferedReader(timeZonesFromFile);
+        String tempString;
+        List<Zone> zones = new ArrayList<>();
+        while ((tempString = fileReader.readLine()) != null) {
+            Zone tempZone = new Zone();
+            tempString = tempString.replace('"', ' ');
+            tempString =tempString.replaceAll("\\s+","");
+
+
+            String[] getLineFromFile = tempString.split(",");
+
+            tempZone.setID(getLineFromFile[0]);
+            tempZone.setCountryCode(getLineFromFile[1]);
+            tempZone.setTimeZone(getLineFromFile[2]);
+
+            zones.add(tempZone);
+        }
+        timeZonesFromFile.close();
+        return zones;
+    }
+
+    private void printSortedZones(List<Zone> zones) {
         for (Zone zone : zones) {
-            System.out.println(zone.getID()+ " " + zone.getCountryCode() + " " + zone.getTimeZone());
+//            System.out.println(String.format("%-20s= %s" , zone.getID(), zone.getCountryCode() ));
+            System.out.println(zone.getID() + " " + zone.getCountryCode() + " " + zone.getTimeZone());
         }
     }
 }
